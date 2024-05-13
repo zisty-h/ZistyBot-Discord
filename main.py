@@ -7,8 +7,7 @@ import zipfile
 with open(file="./info.json", mode="r", encoding="utf-8") as f:
     info = json.loads(f.read())
 
-with open("./DM_Log.json", mode="r", encoding="utf-8") as f:
-    logs = json.loads(f.read())
+#  = {}
 developers = []
 Discord_token = info['Discord']['token']
 intents = discord.Intents.all()
@@ -28,8 +27,6 @@ async def on_ready():
             for member in members:
                 for role in member.roles:
                     if 1185947950275379270 == role.id:
-                        if member.id in logs.keys():
-                            logs[member.id] = []
                         developers.append(member.id)
         else:
             roles = server.roles
@@ -63,7 +60,6 @@ async def on_ready():
                     else:
                         await pprint("don't add zisty-role. server: {}, user: {}({})".format(server.name, server.get_member(member).display_name,member))
     await pprint(developers)
-    save(logs)
 
 
 def admin_control(msg):
@@ -79,7 +75,7 @@ async def on_message(message):
         text = f"{message.guild}({message.channel}) : {user_name}({user_id}) > {message.content}"
         await pprint(text)
         if isinstance(message.channel, discord.DMChannel):
-            logs[user_id].append(message)
+            # [user_id].append(message)
             if message.author.id in developers:
                 if message.content == "!log on":
                     if user_id in isWatchLog:
@@ -93,11 +89,6 @@ async def on_message(message):
                     await message.channel.send("# Don't Logging mode.\n## Stop logging")
                     isWatchLog.remove(user_id)
                     pass
-                elif message.content == "!clear":
-                    await message.channel.send("# Start clear log. please wait sametime.")
-                    for msg in logs[user_id]:
-                        await msg.delete()
-
                 else:
                     await message.channel.send("Hello {}!".format(user_name))
         for user in isWatchLog:
@@ -221,7 +212,7 @@ async def on_guild_join(guild):
 async def pprint(text):
     print(text)
     replace_texts = ["\033[32m", "\033[0m"]
-    Text = text
+    Text = str(text)
     for replace_text in replace_texts:
         if replace_text in Text:
             Text = Text.replace(replace_text, "")
@@ -229,9 +220,6 @@ async def pprint(text):
         await bot.get_user(user).send(Text)
     return
 
-def save(data):
-    with open('DM_Log.json', 'w') as outfile:
-        outfile.write(json.dump(data))
-    return
+
 
 bot.run(Discord_token)
