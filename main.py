@@ -9,7 +9,8 @@ with open(file="./info.json", mode="r", encoding="utf-8") as f:
 
 #  = {}
 role_name = "Zisty-member"
-developers = []
+News_channel_name = "Zisty-News"
+developers = [1077177658758152253]
 Discord_token = info['Discord']['token']
 intents = discord.Intents.all()
 bot = discord.Client(intents=intents)
@@ -19,17 +20,21 @@ isWatchLog = [1077177658758152253]
 
 @bot.event
 async def on_ready():
-    await pprint("Bot is ready!")
+    # await pprint("Bot is ready!")
     servers = list(bot.guilds)
     for server in servers:
-        await pprint("\033[32m" + server.name + "\033[0m")
+        await pprint("\033[32m# " + server.name + "\033[0m")
         channels = server.channels
         created = True
-        await pprint("# display channels")
+        await pprint("## display channels")
         for channel in channels:
             if channel.type == discord.ChannelType.text:
                 if created:
-                    join_link = await channel.create_invite()
+                    try:
+                        join_link = await channel.create_invite()
+                    finally:
+                        await pprint("Failed to create invite")
+
                     created = False
                     await channel.send("# Zisty bot in online.")
             await pprint("\033[32m" + channel.name + "\033[0m")
@@ -86,7 +91,7 @@ async def on_ready():
     await pprint(developers)
 
 
-def admin_control(msg):
+async def admin_control(msg):
     return
 @bot.event
 async def on_message(message):
@@ -113,10 +118,53 @@ async def on_message(message):
                     await message.channel.send("# Don't Logging mode.\n## Stop logging")
                     isWatchLog.remove(user_id)
                     pass
+                elif message.content[0:len("!Alert-Post ")] == "!Alert-Post ":
+                    args = message.content.replace("!Alert-Post ", "").split(" || ")
+                    await message.channel.send("## Try News Send...")
+                    await pprint(f"{message.author.name}: ")
+                    await pprint(args)
+                    NewsText = f"# {args[0]}\n **{args[1]}**"
+                    for server in bot.guilds:
+                        channels = server.channels
+                        hasZisty = True
+                        for channel in channels:
+                            if channel.name == News_channel_name:
+                                await channel.send(NewsText)
+                                await pprint("Send Done.")
+                                hasZisty = False
+                        if hasZisty:
+                            channel = await server.create_text_channel(
+                                News_channel_name,
+                                topic="Zistyの開発者からのお知らせが送信されます",
+                                reason=f"Created by Zisty"
+                            )
+                            await channel.edit(type=discord.ChannelType.news)
+                            await channel.send(NewsText)
                 else:
                     await message.channel.send("Hello {}!".format(user_name))
         if user_id in developers:
-            admin_control(message)
+            print("Developer Mode")
+            if message.content[0:len("!Alert-Post ")] == "!Alert-Post ":
+                args = message.content.replace("!Alert-Post ", "").split(" || ")
+                await pprint(args)
+                NewsText = f"# {args[0]}\n **{args[1]}**"
+                for server in bot.guilds:
+                    channels = server.channels
+                    hasZisty = True
+                    for channel in channels:
+                        if channel.name == News_channel_name and channel.type == discord.ChannelType.news:
+                            await channel.send(NewsText)
+                            await pprint("Send Done.")
+                            hasZisty = False
+                    if hasZisty:
+                        channel = await server.create_text_channel(
+                            News_channel_name,
+                            topic="Zistyの開発者からのお知らせが送信されます",
+                            reason=f"Created by Zisty"
+                        )
+                        await channel.edit(type=discord.ChannelType.news)
+                        await channel.send(NewsText)
+            await admin_control(message)
 
         if message.content == "!zisty-projects":
             await pprint("Zisty projects")
