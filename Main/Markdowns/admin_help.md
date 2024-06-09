@@ -6,6 +6,6 @@ This command is that delete all zisty news channels.
 ### Zisty!logging
 This command is that send log server's invite.
 
-## PIENNU
+## Owner (PIENNU)
 ### Zisty!setRole <mention user> <Role>
 This command is that set the role to the user.
